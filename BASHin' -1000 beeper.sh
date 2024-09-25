@@ -1,5 +1,5 @@
 #      -+- ClusterScript -+-
-#  -+- Rev. 2.4_LINPRERELEASE -+-
+#  -+- Rev. 3.0_LINPRERELEASE -+-
 
 AT() { # Attention Tone
     beep -f 2200 -l $1
@@ -26,7 +26,6 @@ AtTheEnd() { # it seems to not matter
 
 LowQualitize() {
     DT 2000 2000
-    echo "This function is still in beta!"
     mkdir "cluster_result"
     sleep 1
     # the initial 5
@@ -70,6 +69,13 @@ OtherFormatConv() {
     AtTheEnd
 }
 
+Visualize() {
+    DT 2000 2000
+    mkdir "cluster_result"
+    ffmpeg -hide_banner -loglevel error -y -i "$1.$2" -filter_complex "[0:a]avectorscope=draw=line:mode=lissajous_xy:rf=50:bf=50:gf=50:af=50:rc=255:bc=255:gc=255:r=60:s=640x480,format=yuv420p[v]" -map "[v]" -map 0:a -vcodec libx265 "cluster_result/$1_vectscope_$RANDOM.mp4"
+    AtTheEnd
+}
+
 WhyDidIWriteThis() {
     beep -f 2500 -l 1500 & echo "You are not supposed to be here. How did you get here?"
     sleep 1
@@ -91,25 +97,22 @@ WhyDidIWriteThis() {
 
 MainAsk() {
     beep -f 2000 -l 150
-    read -p "Type the extension of the file: " extension
-    beep -f 2500 -l 25
-    read -p "Type the name of the file: " infile
+    read -p "Type the name of the file: " file
+    infile="${file%.*}" # credit to Architect for these lines
+    extension="${file##*.}"  # credit to Architect for these lines
     beep -f 2000 -l 50
-    read -p "Do you want to convert to WAV? (Y/N) " -n 1 -r
+    echo "Select a function:"
+    echo "LowQualitize (1), Visualize (2), Convert to WAV (3), Convert to another format (4)" # completely redid the ask
+    read -p "" -n 1 -r
     echo    # (optional) move to a new line
-    if [[ $REPLY =~ ^[Yy]$ ]]
-    then
+    if [[ $REPLY == "1" ]]; then
+        LowQualitize "$infile" "$extension"
+    elif [[ $REPLY == "2" ]]; then
+        Visualize "$infile" "$extension"
+    elif [[ $REPLY == "3" ]]; then
         WavConv "$infile" "$extension"
-    else
-        beep -f 2000 -l 50
-        read -p "Do you want to convert to a specifiable format? " -n 1 -r
-        echo    # (optional) move to a new line
-        if [[ $REPLY =~ ^[Yy]$ ]]
-        then
-            OtherFormatConv "$infile" "$extension"
-        else
-            LowQualitize "$infile" "$extension"
-        fi
+    elif [[ $REPLY == "4" ]]; then
+        OtherFormatConv "$infile" "$extention"
     fi
 }
 
