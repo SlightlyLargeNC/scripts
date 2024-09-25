@@ -12,3 +12,6 @@ beep
 
 # RANDOM BEEPS.sh  
 beep
+
+# BITTEN.txt
+one or more teeth
