@@ -36,7 +36,7 @@ LowQualitize() {
     ffmpeg -hide_banner -loglevel error -y -i "$1.$2" -ar 8000 -b:a 1k -acodec libspeex "cluster_result/$1_1kbspeex_$RANDOM.ogg"
     ffmpeg -hide_banner -loglevel error -y -i "$1.$2" -ar 8000 -b:a 8k -acodec libspeex "cluster_result/$1_8kbspeex_$RANDOM.ogg"
 
-    # 3 bit depth 4192hz and dpcm8192
+    # 3 bit depth 4096hz and dpcm8192
     ffmpeg -hide_banner -loglevel error -y -i "$1.$2" "$1_tmp.wav"
     ./aud2aafc -i "$1_tmp.wav" --bps 3 -ar 4096 # aafc pass 1
     ./aafc2wav "aafc_conversions/$1_tmp.aafc" "cluster_result/$1_3bitdepth4096hz_$RANDOM"
