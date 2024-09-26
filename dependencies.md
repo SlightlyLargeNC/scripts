@@ -8,7 +8,10 @@ aafc2wav (https://github.com/architectnt/aafc2wav)
 beep  
 
 # RANDOM BEEPS.sh  
-beep
+beep  
 
 # BITTEN.txt
-one or more teeth
+one or more teeth  
+
+# furmodules and .fur files  
+tildearrow's [Furnace](https://github.com/tildearrow/furnace)
