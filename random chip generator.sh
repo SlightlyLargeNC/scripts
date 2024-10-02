@@ -177,15 +177,31 @@ clearchsc(){
 }
 
 debugmenu(){
-    echo "You just found the secret debug menu!"
-    echo "Select a debug function: "
+    echo "Select a debug function (N to return to the main menu, Q to quit): "
     read -p "Echo the chip schema (1), Purge the chip schema (2) " -n 1 -r
-    if [[ $REPLY == 1 ]]; then
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
+        mainask
+    elif [[ $REPLY =~ ^[Qq]$ ]]; then
+        exit 0
+    elif [[ $REPLY == 1 ]]; then
         echo "${chipsBase[@]}"
     elif [[ $REPLY == 2 ]]; then
-        chipsBase=()
+        read -p "ARE YOU SURE?? This will delete EVERY SINGLE CHIP that is currently in this session's schema!! " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            read -p "ARE YOU ABSOLUTELY SURE?? Type \"I understand that this will erase the entire schema for this instance of this program.\": " -r
+            echo    # (optional) move to a new line
+            if [[ $REPLY == "I understand that this will erase the entire schema for this instance of this program." ]]; then
+                chipsBase=()
+            else
+                debugmenu
+            fi
+        else
+            debugmenu
+        fi
     fi
-    mainask
+    debugmenu
 }
 
 addtochsc(){
