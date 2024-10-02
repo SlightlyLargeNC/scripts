@@ -169,10 +169,21 @@ removechip(){
 }
 
 clearchsc(){
-    rm .extChipSchema
-    touch .extChipSchema
-    chipsBase=()
-    generatebasechsc
+    read -p "Are you sure you want to delete the entire chip schema? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        read -p "Are you *sure*? " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ $REPLY =~ ^[Yy]$ ]]
+        then
+            rm .extChipSchema
+            touch .extChipSchema
+            chipsBase=()
+            generatebasechsc
+            mainask
+        fi
+    fi
     mainask
 }
 
