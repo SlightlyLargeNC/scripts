@@ -189,12 +189,16 @@ debugmenu(){
 }
 
 addtochsc(){
+    generatebasechsc
     for line in $(cat .extChipSchema); do
         chipsBase+=("$line")
     done
 }
 
 generatebasechsc
+for line in $(cat .extChipSchema); do
+    chipsBase+=("$line")
+done
 
 echo "This is a work in progress!"
 
