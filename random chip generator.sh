@@ -107,12 +107,16 @@ generatebasechsc(){
 
 mainask(){
     trap - SIGINT
+    if [[ $wipprompt == 1 ]]; then # leftover from when i had `clear -x` at the start of every menu that i'm too lazy to change
+        echo "This is a work in progress!"
+        let "wipprompt++"
+    fi
     echo    # (optional) move to a new line
     echo "Select a function (Press Q to quit): "
     read -p "Random System (1), Add a chip (2), Remove a chip (3), Delete the chip schema (4), Echo the chip schema (5) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Qq]$ ]]; then
-        exit 0
+        quitTheProgram
     elif [[ $REPLY == 1 ]]; then
         randsys
     elif [[ $REPLY == 2 ]]; then
@@ -197,13 +201,14 @@ clearchsc(){
 }
 
 debugmenu(){
+    echo
     echo "Select a debug function (N to return to the main menu, Q to quit) (Note that the function or purpose of these may not always be clear): "
-    read -p "Echo the chip schema (1), Purge the chip schema (2), Test ESC key detection (3) " -n 1 -r
+    read -p "Echo the chip schema (1), Purge the chip schema (2), Test ESC key detection (3), Test quitTheProgram (4) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Nn]$ ]]; then
         mainask
     elif [[ $REPLY =~ ^[Qq]$ ]]; then
-        exit 0
+        quitTheProgram
     elif [[ $REPLY == 1 ]]; then
         echo "${chipsBase[@]}"
     elif [[ $REPLY == 2 ]]; then
@@ -226,6 +231,8 @@ debugmenu(){
         case $REPLY in
             $'\e') echo "Escaped."; exit 0
         esac
+    elif [[ $REPLY == 4 ]]; then
+        quitTheProgram
     fi
     debugmenu
 }
@@ -238,8 +245,13 @@ addtochsc(){
 }
 
 stupidfunctionsmenu(){
-    echo "why did i fucking make this menu"
-    read -p " (1) " -n 1 -r
+    echo
+    echo "Welcome to the menu to fuck around and have fun. Enter a number or press N to go back to the main menu."
+    echo
+    echo "Your options are:"
+    echo "Re-echo the ext. chip schema into the current chip instance's schema (causing external chips to show up more often) (1)"
+    echo "PLACEHOLDER TEXT HERE (2)"
+    read -p "" -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY == 1 ]]; then
         read -p "WHAT IS IT THAT YE WISH FOR IN TERMS OF NUMERICS? " whatsit
@@ -248,10 +260,20 @@ stupidfunctionsmenu(){
                 chipsBase+=("$line")
             done
         done
+    elif [[ $REPLY == 2 ]]; then
+        echo "Place holded."
+        stupidfunctionsmenu
     elif [[ $REPLY =~ ^[Nn]$ ]]; then
         mainask
     fi
     stupidfunctionsmenu
+}
+
+quitTheProgram(){
+    echo "Exiting..."
+    sleep 0.2
+    clear -x
+    exit 0
 }
 
 # template code:
@@ -269,14 +291,16 @@ for line in $(cat .extChipSchema); do
     chipsBase+=("$line")
 done
 
-echo "This is a work in progress!"
-
 if [[ -e .extChipSchema ]]; then
+    wipprompt=1
+    clear -x
     mainask
 else
-    trap "" SIGINT # we don't want the user exiting here in the extremely rare chance that they accidentally exit while the file is being created 
+    trap "" SIGINT # we don't want the user exiting here in the extremely rare chance that they accidentally exit while the file is being created
     echo "External chip schema not detected, creating..."
     touch .extChipSchema
+    wipprompt=1
     sleep 1
+    clear -x
     mainask
 fi
