@@ -52,6 +52,17 @@ LowQualitize() {
     ffmpeg -hide_banner -loglevel error -y -i "TEMPLOUD_$1.$2.wav"  -c:a libopus -b:a 1k "cluster_result/$1_codlobby_$RANDOM.ogg" # encode it with opus again for that Extra Quality(tm)
     rm "TEMPLOUD_$1.$2.wav"
     AtTheEnd
+
+    # stereo difference (inverted right channel)
+    ffmpeg -i "$1.$2" -filter_complex \
+    "[0:0]pan=1|c0=c0[left]; \
+    [0:0]pan=1|c0=c1[right]" \
+    -map "[left]" left.wav -map "[right]" right.wav
+    ffmpeg -i right.wav -af "aeval='-val(0)':c=same" rightinv.wav
+    ffmpeg -i left.wav -i rightinv.wav -filter_complex amix=inputs=2:duration=longest "cluster_result/$1_stdiff_$RANDOM.wav"
+    rm left.wav
+    rm right.wav
+    rm rightinv.wav
 }
 
 WavConv() {
