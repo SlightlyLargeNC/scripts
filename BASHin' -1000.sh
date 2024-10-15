@@ -166,7 +166,7 @@ Visualize() {
     # the newest function in the current iteration. designed to be modular.
     echo "This may take a long time!"
     mkdir "cluster_result"
-    ffmpeg -hide_banner -loglevel error -y -i "$1.$2" -filter_complex "[0:a]avectorscope=draw=line:mode=lissajous_xy:rf=50:bf=50:gf=50:af=50:rc=255:bc=255:gc=255:r=60:s=1280x720,format=yuv420p[v]" -map "[v]" -map 0:a -vcodec libx265 -movflags frag_keyframe+empty_moov "cluster_result/$1_vectscope_$RANDOM.mp4" # initially wasn't fragmenting. attempt #1 to fix: tacking on "-movflags frag_keyframe+empty_moov", also made resolution 720p.
+    ffmpeg -hide_banner -loglevel error -y -i "$1.$2" -filter_complex "[0:a]avectorscope=draw=line:mode=lissajous_xy:rf=50:bf=50:gf=50:af=50:rc=255:bc=255:gc=255:r=60:s=1080x1080,format=yuv420p[v]" -map "[v]" -map 0:a -vcodec libx265 -movflags frag_keyframe+empty_moov "cluster_result/$1_vectscope_$RANDOM.mp4" # initially wasn't fragmenting. attempt #1 to fix: tacking on "-movflags frag_keyframe+empty_moov", also made resolution 1080x1080.
     AtTheEnd
 }
 
