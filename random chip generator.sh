@@ -1,4 +1,7 @@
 IFS=$'\n'
+warnstart=$(tput setaf 11)
+criticalstart=$(tput setaf 1)
+ansiend=$(tput sgr0)
 
 generatebasechsc(){
     chipsBase=(
@@ -103,12 +106,17 @@ generatebasechsc(){
 }
 
 mainask(){
+    trap - SIGINT
+    if [[ $wipprompt == 1 ]]; then # leftover from when i had `clear -x` at the start of every menu that i'm too lazy to change
+        echo "This is a work in progress!"
+        let "wipprompt++"
+    fi
     echo    # (optional) move to a new line
     echo "Select a function (Press Q to quit): "
     read -p "Random System (1), Add a chip (2), Remove a chip (3), Delete the chip schema (4), Echo the chip schema (5) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Qq]$ ]]; then
-        exit 0
+        quitTheProgram
     elif [[ $REPLY == 1 ]]; then
         randsys
     elif [[ $REPLY == 2 ]]; then
@@ -122,6 +130,8 @@ mainask(){
         mainask
     elif [[ $REPLY =~ ^[Dd]$ ]]; then
         debugmenu
+    elif [[ $REPLY =~ ^[Ss]$ ]]; then
+        stupidfunctionsmenu
     else
         echo "what in the everfuck"
         mainask
@@ -134,7 +144,7 @@ randsys(){
     echo
     if [[ count -ge "1024" ]]; then
         randomglobal=$RANDOM
-        echo "Output too large! echoing into file..."
+        echo "${warnstart}Output too large!${ansiend} echoing into file..."
         echo "The $namesys:" >> chipout_$randomglobal.txt
         for ((i=0; i<count; i++)); do # ChatGPT is saving my ass right now lmao
             index=$((RANDOM % ${#chipsBase[@]}))  # Get a random index
@@ -162,14 +172,17 @@ removechip(){
     echo "The list of externally added chips is: "
     echo "$(<.extChipSchema)"
     echo    # (optional) move to a new line
-    read -p "Type the name of the chip you would like to remove: " removedchip
+    read -p "Type the name of the chip you would like to remove (or press Esc then Enter to leave): " removedchip
+    case $REPLY in
+        $'\e') mainask
+    esac
     sed "/$removedchip/d" .extChipSchema > .tmpfile && mv .tmpfile .extChipSchema
     chipsBase=( ${chipsBase[@]/$removedchip/} )
     mainask
 }
 
 clearchsc(){
-    read -p "Are you sure you want to delete the entire chip schema? " -n 1 -r
+    read -p "${criticalstart}THIS WILL DELETE THE EXTERNAL CHIP SCHEMA!!${ansiend} Are you sure? " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
@@ -177,10 +190,10 @@ clearchsc(){
         echo    # (optional) move to a new line
         if [[ $REPLY =~ ^[Yy]$ ]]
         then
-            rm .extChipSchema
-            touch .extChipSchema
-            chipsBase=()
-            generatebasechsc
+            rm .extChipSchema # delete the external chip schema
+            touch .extChipSchema # create a new empty chip schema
+            chipsBase=() # delete the chip schema of the current instance
+            generatebasechsc # regenerate the chip schema with the base chips
             mainask
         fi
     fi
@@ -188,17 +201,18 @@ clearchsc(){
 }
 
 debugmenu(){
-    echo "Select a debug function (N to return to the main menu, Q to quit): "
-    read -p "Echo the chip schema (1), Purge the chip schema (2) " -n 1 -r
+    echo
+    echo "Select a debug function (N to return to the main menu, Q to quit) (Note that the function or purpose of these may not always be clear): "
+    read -p "Echo the chip schema (1), Purge the chip schema (2), Test ESC key detection (3), Test quitTheProgram (4) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Nn]$ ]]; then
         mainask
     elif [[ $REPLY =~ ^[Qq]$ ]]; then
-        exit 0
+        quitTheProgram
     elif [[ $REPLY == 1 ]]; then
         echo "${chipsBase[@]}"
     elif [[ $REPLY == 2 ]]; then
-        read -p "ARE YOU SURE?? This will delete EVERY SINGLE CHIP that is currently in this session's schema!! " -n 1 -r
+        read -p "${criticalstart}ARE YOU SURE??${ansiend} This will delete EVERY SINGLE CHIP that is currently in this session's schema!! " -n 1 -r
         echo    # (optional) move to a new line
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             read -p "ARE YOU ABSOLUTELY SURE?? Type \"I understand that this will erase the entire schema for this instance of this program.\": " -r
@@ -211,6 +225,14 @@ debugmenu(){
         else
             debugmenu
         fi
+    elif [[ $REPLY == 3 ]]; then
+        read -p "Escape!!" -n 1 -r
+        echo
+        case $REPLY in
+            $'\e') echo "Escaped."; exit 0
+        esac
+    elif [[ $REPLY == 4 ]]; then
+        quitTheProgram
     fi
     debugmenu
 }
@@ -222,18 +244,63 @@ addtochsc(){
     done
 }
 
+stupidfunctionsmenu(){
+    echo
+    echo "Welcome to the menu to fuck around and have fun. Enter a number or press N to go back to the main menu."
+    echo
+    echo "Your options are:"
+    echo "Re-echo the ext. chip schema into the current chip instance's schema (causing external chips to show up more often) (1)"
+    echo "PLACEHOLDER TEXT HERE (2)"
+    read -p "" -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY == 1 ]]; then
+        read -p "WHAT IS IT THAT YE WISH FOR IN TERMS OF NUMERICS? " whatsit
+        for ((i=0; i<whatsit; i++)); do
+            for line in $(cat .extChipSchema); do
+                chipsBase+=("$line")
+            done
+        done
+    elif [[ $REPLY == 2 ]]; then
+        echo "Place holded."
+        stupidfunctionsmenu
+    elif [[ $REPLY =~ ^[Nn]$ ]]; then
+        mainask
+    fi
+    stupidfunctionsmenu
+}
+
+quitTheProgram(){
+    echo "Exiting..."
+    sleep 0.2
+    clear -x
+    exit 0
+}
+
+# template code:
+bp_genericmenuDONOTCALL(){
+    read -p "PLACEHOLDER (1) " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY == 1 ]]; then
+        echo "what in the everfuck"
+    fi
+}
+
+
 generatebasechsc
 for line in $(cat .extChipSchema); do
     chipsBase+=("$line")
 done
 
-echo "This is a work in progress!"
-
 if [[ -e .extChipSchema ]]; then
+    wipprompt=1
+    clear -x
     mainask
 else
+    trap "" SIGINT # we don't want the user exiting here in the extremely rare chance that they accidentally exit while the file is being created
     echo "External chip schema not detected, creating..."
     touch .extChipSchema
+    wipprompt=1
     sleep 1
+    clear -x
     mainask
 fi
