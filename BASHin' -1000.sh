@@ -220,22 +220,6 @@ TheOnlyReasonINeedThisMenuIsBecauseICompiledMyFuckingFFmpegWrongAndLeftOutOverHa
     TheOnlyReasonINeedThisMenuIsBecauseICompiledMyFuckingFFmpegWrongAndLeftOutOverHalfOfIt
 }
 
-checkAAFC(){
-    if [[ -e ./cluster_AAFC ]]; then # if the folder exists, then:
-    DM -d "AAFC folder check passed. "
-        if [[ -e cluster_AAFC/aud2aafc ]] && [[ -e cluster_AAFC/aafc2wav ]] && [[ -e cluster_AAFC/libaafc.so ]]; then # if the required files exist, then:
-            DM -d "AAFC check passed. "
-            checkSSDPCM
-        else # required AAFC files do not exist
-            echo "AAFC resources (aud2aafc, aafc2wav, libaafc.so) do not exist, disabling AAFC... "
-            noaafc=1
-            MainAsk
-        fi
-    else # AAFC folder does not exist
-        echo "AAFC folder does not exist! Create the folder and put \"aud2aafc\", \"aafc2wav\", and \"libaafc.so\" into it!"
-    fi
-}
-
 checkSSDPCM(){
     if [[ -e ./cluster_SSDPCM ]]; then # if the folder exists, then:
     DM -d "SSDPCM folder check passed. "
@@ -248,15 +232,35 @@ checkSSDPCM(){
         fi
     else # SSDPCM folder does not exist
         echo "SSDPCM folder does not exist! Create the folder and put the required SSDPCM files into it!"
+        echo "Disabling SSDPCM..."
+        nossdpcm=1
+        MainAsk
     fi
 }
 
-debugmessages=1 # manual flag to enable debug messages
-annoyMe=1 # enable this if you love annoying debug messages
+
+checkAAFC(){
+    if [[ -e ./cluster_AAFC ]]; then # if the folder exists, then:
+    DM -d "AAFC folder check passed. "
+        if [[ -e cluster_AAFC/aud2aafc ]] && [[ -e cluster_AAFC/aafc2wav ]] && [[ -e cluster_AAFC/libaafc.so ]]; then # if the required files exist, then:
+            DM -d "AAFC check passed. "
+            checkSSDPCM
+        else # required AAFC files do not exist
+            echo "AAFC resources (aud2aafc, aafc2wav, libaafc.so) do not exist, disabling AAFC... "
+            noaafc=1
+            checkSSDPCM
+        fi
+    else # AAFC folder does not exist
+        echo "AAFC folder does not exist! Create the folder and put \"aud2aafc\", \"aafc2wav\", and \"libaafc.so\" into it!"
+        checkSSDPCM
+    fi
+}
+
+debugmessages=0 # manual flag to enable debug messages
+annoyMe=0 # enable this if you love annoying debug messages
 getUnixTimestamp(){ # get the current unix timestamp.
     date +%s
 }
 
 DM -dpa "if you see this the annoyMe check passed" # debug annoyMe. this also serves as a warning if the user leaves it on.
 checkAAFC
-MainAsk
