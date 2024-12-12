@@ -1,4 +1,6 @@
 # SLNC's Bash/Shell Scripts (and other stuff)  
+NOTE: This repo has been moved to git.gay  
+  
 a collection of random Bash/Shell scripts i have made.  
 so far this only includes one actual script.  
 this also includes Furnace modules and other stuff.  
